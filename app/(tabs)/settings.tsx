@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Linking } from 'react-native';
-import { useStats } from '../contexts/StatsContext';
+import { useStats } from '../../contexts/StatsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useNotifications } from '../hooks/useNotifications';
+import { useNotifications } from '../../hooks/useNotifications';
 
 export default function SettingsScreen() {
   const { stats, updateProfile, setRemindersEnabled, clearAllData, logout } = useStats();
