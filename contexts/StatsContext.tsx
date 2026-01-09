@@ -21,6 +21,7 @@ interface StatsContextType {
   deleteEntry: (id: string) => void;
   updateProfile: (name: string) => void;
   toggleReminders: () => void;
+  setRemindersEnabled: (enabled: boolean) => void;
   clearAllData: () => void;
   logout: () => void;
   startOnboarding: () => void;
@@ -106,6 +107,10 @@ export function StatsProvider({ children }: { children: ReactNode }) {
     setStats(prev => ({ ...prev, remindersEnabled: !prev.remindersEnabled }));
   }, []);
 
+  const setRemindersEnabled = useCallback((enabled: boolean) => {
+    setStats(prev => ({ ...prev, remindersEnabled: enabled }));
+  }, []);
+
   const clearAllData = useCallback(() => {
     const fresh: UserStats = {
       totalSpent: 0,
@@ -141,6 +146,7 @@ export function StatsProvider({ children }: { children: ReactNode }) {
       deleteEntry,
       updateProfile,
       toggleReminders,
+      setRemindersEnabled,
       clearAllData,
       logout,
       startOnboarding,

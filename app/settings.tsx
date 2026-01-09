@@ -1,18 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Switch, Linking } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Linking } from 'react-native';
 import { useStats } from '../contexts/StatsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useNotifications } from '../hooks/useNotifications';
 
 export default function SettingsScreen() {
-  const { stats, updateProfile, toggleReminders, clearAllData, logout } = useStats();
+  const { stats, updateProfile, setRemindersEnabled, clearAllData, logout } = useStats();
   const [name, setName] = useState(stats.name);
+  const [isTogglingNotifications, setIsTogglingNotifications] = useState(false);
   const router = useRouter();
+  const { enableNotifications, disableNotifications, hasPermission, checkPermissionStatus } = useNotifications();
 
   // Sync local name state with context when stats.name changes (e.g., after clear data)
   useEffect(() => {
     setName(stats.name);
   }, [stats.name]);
+
+  // Re-check permission status when screen is focused
+  useEffect(() => {
+    checkPermissionStatus();
+  }, []);
+
+  const handleToggleNotifications = async () => {
+    if (isTogglingNotifications) return;
+    
+    setIsTogglingNotifications(true);
+    try {
+      if (stats.remindersEnabled) {
+        // Disable notifications
+        await disableNotifications();
+        setRemindersEnabled(false);
+      } else {
+        // Enable notifications
+        const success = await enableNotifications();
+        if (success) {
+          setRemindersEnabled(true);
+        }
+      }
+    } finally {
+      setIsTogglingNotifications(false);
+    }
+  };
 
   const handleUpdateName = (text: string) => {
     const upper = text.toUpperCase();
@@ -86,15 +115,18 @@ export default function SettingsScreen() {
           {/* SUNDAY REFLECTION */}
           <View className="bg-white border-[4px] border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex-row justify-between items-center">
             <View className="flex-row items-center gap-4 flex-1">
-              <Text className="text-4xl">🔔</Text>
+              <Text className="text-4xl">{stats.remindersEnabled ? '🔔' : '🔕'}</Text>
               <View>
                 <Text className="font-black text-xl uppercase leading-tight text-black">Sunday Reflection</Text>
-                <Text className="text-[11px] font-black text-black opacity-80 uppercase">WEEKLY REMINDER @ 7:00 PM</Text>
+                <Text className="text-[11px] font-black text-black opacity-80 uppercase">
+                  {stats.remindersEnabled ? 'WEEKLY REMINDER @ 7:00 PM' : 'NOTIFICATIONS OFF'}
+                </Text>
               </View>
             </View>
             <TouchableOpacity 
-              onPress={toggleReminders}
-              className="w-14 h-14 border-[4px] border-black bg-brutalist-yellow items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+              onPress={handleToggleNotifications}
+              disabled={isTogglingNotifications}
+              className={`w-14 h-14 border-[4px] border-black items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${stats.remindersEnabled ? 'bg-brutalist-yellow' : 'bg-gray-200'}`}
             >
               {stats.remindersEnabled && (
                 <View className="w-6 h-6 bg-black" />

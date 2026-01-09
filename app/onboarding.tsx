@@ -3,15 +3,21 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useStats } from '../contexts/StatsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNotifications } from '../hooks/useNotifications';
 
 export default function OnboardingScreen() {
   const [step, setStep] = useState(1);
-  const { finishOnboarding } = useStats();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const { finishOnboarding, setRemindersEnabled } = useStats();
+  const { enableNotifications } = useNotifications();
   const router = useRouter();
 
   const requestNotifications = async () => {
-    // UI placeholder only as requested
-    console.log("Notification permission requested (stub)");
+    const success = await enableNotifications();
+    if (success) {
+      setNotificationsEnabled(true);
+      setRemindersEnabled(true);
+    }
   };
 
   const handleFinish = () => {
@@ -130,9 +136,12 @@ export default function OnboardingScreen() {
             <View className="gap-y-4 w-full">
               <TouchableOpacity 
                 onPress={requestNotifications}
-                className="w-full bg-white border-[4px] border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                disabled={notificationsEnabled}
+                className={`w-full border-[4px] border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${notificationsEnabled ? 'bg-green-500' : 'bg-white'}`}
               >
-                <Text className="text-black text-lg font-black text-center uppercase">ENABLE NOTIFICATIONS</Text>
+                <Text className={`text-lg font-black text-center uppercase ${notificationsEnabled ? 'text-white' : 'text-black'}`}>
+                  {notificationsEnabled ? '✓ NOTIFICATIONS ENABLED' : 'ENABLE NOTIFICATIONS'}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 onPress={handleFinish}
