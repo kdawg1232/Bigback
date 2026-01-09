@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Switch } from 'react-native';
-import { useStats } from '../../hooks/useStats';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Switch, Linking } from 'react-native';
+import { useStats } from '../contexts/StatsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
@@ -8,6 +8,11 @@ export default function SettingsScreen() {
   const { stats, updateProfile, toggleReminders, clearAllData, logout } = useStats();
   const [name, setName] = useState(stats.name);
   const router = useRouter();
+
+  // Sync local name state with context when stats.name changes (e.g., after clear data)
+  useEffect(() => {
+    setName(stats.name);
+  }, [stats.name]);
 
   const handleUpdateName = (text: string) => {
     const upper = text.toUpperCase();
@@ -17,8 +22,8 @@ export default function SettingsScreen() {
 
   const handleClear = () => {
     Alert.alert(
-      "WIPE ALL SINS?",
-      "THIS WILL WIPE ALL YOUR SINS FOREVER. YOUR STATS WILL BE GONE. ARE YOU SURE?",
+      "WIPE ALL FOOD DATA?",
+      "THIS WILL WIPE ALL YOUR FOOD PURCHASES (DATA) FOREVER. YOUR STATS WILL BE GONE. ARE YOU SURE?",
       [
         { text: "CANCEL", style: "cancel" },
         { text: "WIPE IT ALL", style: "destructive", onPress: clearAllData }
@@ -32,11 +37,15 @@ export default function SettingsScreen() {
   };
 
   const showTerms = () => {
-    Alert.alert("TERMS", "By using Big Back, you admit you have cravings. We provide zero nutritional value. Your data is yours. Don't sue us if you get hungry.");
+    Linking.openURL('https://thebigbackapp.netlify.app/terms');
   };
 
   const showPrivacy = () => {
-    Alert.alert("PRIVACY", "Everything stays on this phone. No cloud. No tracking. We don't want to know your 3 AM orders. Period.");
+    Linking.openURL('https://thebigbackapp.netlify.app/privacy');
+  };
+
+  const showSupport = () => {
+    Linking.openURL('https://thebigbackapp.netlify.app/support');
   };
 
   const joinDate = new Date(stats.memberSince);
@@ -108,18 +117,27 @@ export default function SettingsScreen() {
           </View>
 
           {/* POLICY BUTTONS */}
-          <View className="flex-row gap-3">
+          <View className="flex-row gap-2 w-full">
             <TouchableOpacity 
               onPress={showTerms}
-              className="bg-white border-[3px] border-black px-3 py-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+              style={{ flex: 1 }}
+              className="bg-white border-[3px] border-black py-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none items-center justify-center"
             >
-              <Text className="text-[10px] font-black uppercase text-black">Terms of Policy</Text>
+              <Text className="text-[10px] font-black uppercase text-black text-center" numberOfLines={1}>Terms</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={showPrivacy}
-              className="bg-white border-[3px] border-black px-3 py-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+              style={{ flex: 1 }}
+              className="bg-white border-[3px] border-black py-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none items-center justify-center"
             >
-              <Text className="text-[10px] font-black uppercase text-black">Privacy Policy</Text>
+              <Text className="text-[10px] font-black uppercase text-black text-center" numberOfLines={1}>Privacy</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={showSupport}
+              style={{ flex: 1 }}
+              className="bg-white border-[3px] border-black py-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none items-center justify-center"
+            >
+              <Text className="text-[10px] font-black uppercase text-black text-center" numberOfLines={1}>Support</Text>
             </TouchableOpacity>
           </View>
 
@@ -138,7 +156,7 @@ export default function SettingsScreen() {
               className="w-full bg-black border-[4px] border-black p-6 shadow-[6px_6px_0px_0px_rgba(226,18,55,1)] flex-row items-center justify-center gap-5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
             >
               <Text className="text-3xl">🗑️</Text>
-              <Text className="text-2xl font-black uppercase tracking-tighter text-white">Clear My Sins</Text>
+              <Text className="text-2xl font-black uppercase tracking-tighter text-white">Clear My Food</Text>
             </TouchableOpacity>
           </View>
 

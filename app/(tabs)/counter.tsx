@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Dimensions } from 'react-native';
-import { useStats } from '../../hooks/useStats';
+import { useStats } from '../../contexts/StatsContext';
 import { BRANDS } from '../../constants';
 import { Brand } from '../../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -44,8 +44,8 @@ export default function CounterScreen() {
 
         <View className="mb-6 flex-row items-center gap-2">
           <View className="h-[4px] flex-1 bg-black" />
-          <View className="bg-black px-2 py-1" style={{ transform: [{ skewX: '-12deg' }] }}>
-            <Text className="text-2xl font-black text-white uppercase whitespace-nowrap">the food court</Text>
+          <View className="bg-black px-2 py-3" style={{ transform: [{ skewX: '-12deg' }] }}>
+            <Text className="text-2xl font-black text-white uppercase whitespace-nowrap leading-normal">the food court</Text>
           </View>
           <View className="h-[4px] flex-1 bg-black" />
         </View>
@@ -97,20 +97,21 @@ export default function CounterScreen() {
               <Text className="text-black font-black text-xl">×</Text>
             </TouchableOpacity>
             
-            <Text className="text-4xl font-black leading-[0.85] uppercase text-black mb-6">
+            <Text className="text-4xl font-black leading-normal uppercase text-black mb-6 py-4">
               HOW MUCH{"\n"}DID YOU DROP{"\n"}AT <Text style={{ color: selectedBrand?.color }} className="text-black">{selectedBrand?.name}</Text>
               ?
             </Text>
 
             <View className="gap-y-6">
-              <View className="relative">
-                <Text className="absolute left-4 top-5 text-3xl font-black text-black z-10">$</Text>
+              <View className="flex-row items-center bg-white border-[5px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <Text className="text-4xl font-black text-black pl-4">$</Text>
                 <TextInput 
                   keyboardType="numeric"
                   autoFocus
                   value={amountInput}
                   onChangeText={setAmountInput}
-                  className="w-full bg-white border-[5px] border-black p-4 pl-12 text-5xl font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  className="flex-1 py-4 px-2 text-4xl font-bold text-black"
+                  style={{ includeFontPadding: false }}
                 />
               </View>
 
@@ -118,7 +119,7 @@ export default function CounterScreen() {
                 onPress={handleSubmit}
                 className="w-full bg-black border-[5px] border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-row items-center justify-center gap-3 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
               >
-                <Text className="text-white text-2xl font-black uppercase">LOG DEFEAT</Text>
+                <Text className="text-white text-2xl font-black uppercase">LOG</Text>
                 <Text className="text-2xl">📉</Text>
               </TouchableOpacity>
             </View>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useStats } from '../../hooks/useStats';
+import { useStats } from '../../contexts/StatsContext';
 import { BRANDS } from '../../constants';
 import { BrutalistReceipt } from '../../components/BrutalistReceipt';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -49,23 +49,19 @@ export default function ReceiptScreen() {
   const getStatus = () => {
     const visits = filteredData.count;
     if (visits === 0) return "SOBER";
-    if (visits < 3) return "AMATEUR MUNCHER";
-    if (visits < 8) return "CERTIFIED BIG BACK";
+    if (visits < 10) return "AMATEUR MUNCHER";
     if (visits < 15) return "GLIZZY GLADIATOR";
+    if (visits < 20) return "CERTIFIED BIG BACK";
     return "THE FINAL BOSS";
-  };
-
-  const handleExport = () => {
-    Alert.alert("EXPORT", "In a production build, this captures a high-res screenshot for sharing. Stay strong.");
   };
 
   return (
     <SafeAreaView className="flex-1 bg-brutalist-purple" edges={['top']}>
       <ScrollView className="flex-1 p-6">
         {/* HEADER SECTION */}
-        <View className="flex-row justify-between items-end mb-8">
-          <Text className="text-white text-5xl font-black uppercase tracking-tighter leading-[0.8]">
-            YOUR{"\n"}SINS
+        <View className="flex-row justify-between items-center mb-8">
+          <Text className="text-white text-4xl font-black uppercase tracking-tighter">
+            YOUR RECEIPT
           </Text>
           <View className="flex-row gap-2">
             <TouchableOpacity 
@@ -76,36 +72,30 @@ export default function ReceiptScreen() {
                 {view === 'monthly' ? 'M' : 'Y'}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={handleExport}
-              className="bg-brutalist-yellow border-[4px] border-black w-12 h-12 items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-            >
-              <Text className="text-2xl">💾</Text>
-            </TouchableOpacity>
           </View>
         </View>
 
         {/* THE PHYSICAL RECEIPT */}
         <BrutalistReceipt className="p-8 pb-24">
           <View className="items-center border-b-4 border-dashed border-black pb-6 mb-8">
-            <Text className="text-2xl font-black tracking-widest uppercase text-black">BIG BACK TRACKER</Text>
-            <Text className="text-sm mt-1 uppercase font-bold text-black">[{view} damage]</Text>
-            <Text className="text-sm mt-1 uppercase text-black">EST. {new Date(stats.memberSince).toLocaleDateString()}</Text>
+            <Text className="text-2xl font-black tracking-widest uppercase text-black py-2">BIG BACK TRACKER</Text>
+            <Text className="text-sm mt-1 uppercase font-bold text-black py-1">[{view} damage]</Text>
+            <Text className="text-sm mt-1 uppercase text-black py-1">EST. {new Date(stats.memberSince).toLocaleDateString()}</Text>
             <Text className="text-xs mt-4 text-black">********************************</Text>
-            <Text className="text-xs uppercase font-black text-black">LOGGED BY: {stats.name}</Text>
+            <Text className="text-xs uppercase font-black text-black py-1">LOGGED BY: {stats.name}</Text>
             <Text className="text-xs text-black">********************************</Text>
           </View>
 
           <View className="mb-10 items-center">
-            <Text className="text-sm font-black uppercase text-black">TOTAL DAMAGE</Text>
-            <Text className="text-6xl font-black mt-2 leading-none text-black text-center">
+            <Text className="text-sm font-black uppercase text-black py-1">TOTAL DAMAGE</Text>
+            <Text className="text-6xl font-black mt-2 leading-normal text-black text-center py-4">
               ${filteredData.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           </View>
 
           <View className="mb-10">
             <View className="flex-row justify-between items-center border-b-2 border-black mb-4 pb-1">
-              <Text className="text-sm font-black uppercase text-black">REPEATED MISTAKES</Text>
+              <Text className="text-sm font-black uppercase text-black">REPEATED FOOD PURCHASES</Text>
               <Text className="text-[10px] font-black text-black">$$$</Text>
             </View>
             
@@ -138,15 +128,12 @@ export default function ReceiptScreen() {
           <View className="items-center border-t-4 border-dashed border-black pt-6">
             <Text className="font-black uppercase text-black text-[10px]">THANKS FOR THE HONESTY</Text>
             <Text className="mt-1 uppercase font-black text-black text-[10px]">INCIDENTS: {filteredData.count}</Text>
-            <Text className="mt-4 font-black text-black text-[10px]">********************************</Text>
-            <Text className="mt-2 font-black uppercase text-black text-[10px]">LOCAL STORAGE ONLY • NO CLOUD</Text>
-            <Text className="mt-1 uppercase font-black text-black text-[10px]">v1.0.0-BRUTALIST</Text>
           </View>
         </BrutalistReceipt>
 
         {/* 7-DAY AUDIT LOG */}
         <View className="bg-brutalist-yellow border-[4px] border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-10">
-          <Text className="text-3xl font-black uppercase tracking-tighter leading-none border-b-4 border-black pb-2 text-black mb-1">
+          <Text className="text-3xl font-black uppercase tracking-tighter leading-normal border-b-4 border-black pb-2 text-black mb-1 py-2">
             RECENT AUDIT LOG
           </Text>
           <Text className="text-[10px] font-black uppercase text-black mb-4">

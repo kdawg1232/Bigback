@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useStats } from '../hooks/useStats';
+import { useStats } from '../contexts/StatsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OnboardingScreen() {
@@ -34,7 +34,7 @@ export default function OnboardingScreen() {
       <View className="flex-1 justify-center items-center">
         {step === 1 && (
           <View className="w-full">
-            <Text className="text-4xl font-black uppercase mb-6 leading-[0.85] text-black tracking-tighter text-center">Why Big Back?</Text>
+            <Text className="text-4xl font-black uppercase mb-6 leading-tight text-black tracking-tighter text-center">Why Big Back?</Text>
             
             <View className="gap-y-4 mb-8">
               <View 
@@ -42,7 +42,7 @@ export default function OnboardingScreen() {
                 style={{ transform: [{ rotate: '1deg' }] }}
               >
                 <Text className="text-3xl mb-1">🍔</Text>
-                <Text className="font-black text-xl mb-0.5 uppercase text-black leading-none">3-Second Entry</Text>
+                <Text className="font-black text-xl mb-0.5 uppercase text-black leading-tight">3-Second Entry</Text>
                 <Text className="text-[11px] font-black text-black leading-tight">Tap a logo, drop the price, and go.</Text>
               </View>
 
@@ -51,7 +51,7 @@ export default function OnboardingScreen() {
                 style={{ transform: [{ rotate: '-1deg' }] }}
               >
                 <Text className="text-3xl mb-1">🧾</Text>
-                <Text className="font-black text-xl mb-0.5 uppercase text-white leading-none">The Receipt</Text>
+                <Text className="font-black text-xl mb-0.5 uppercase text-white leading-tight">The Receipt</Text>
                 <Text className="text-[11px] font-black text-white leading-tight">Your monthly damage as a digital receipt.</Text>
               </View>
 
@@ -60,7 +60,7 @@ export default function OnboardingScreen() {
                 style={{ transform: [{ rotate: '1deg' }] }}
               >
                 <Text className="text-3xl mb-1">🛡️</Text>
-                <Text className="font-black text-xl mb-0.5 uppercase text-black leading-none">Total Privacy</Text>
+                <Text className="font-black text-xl mb-0.5 uppercase text-black leading-tight">Total Privacy</Text>
                 <Text className="text-[11px] font-black text-black leading-tight">Your data never leaves this phone.</Text>
               </View>
             </View>
@@ -77,7 +77,7 @@ export default function OnboardingScreen() {
         {step === 2 && (
           <View className="w-full items-center">
             <Text className="text-[100px] mb-6 leading-none" style={{ transform: [{ rotate: '-12deg' }] }}>🍗</Text>
-            <Text className="text-4xl font-black uppercase mb-4 leading-[0.85] text-black text-center">The Mission</Text>
+            <Text className="text-4xl font-black uppercase mb-4 leading-tight text-black text-center">The Mission</Text>
             <Text className="text-lg font-bold text-black opacity-90 mb-8 leading-snug text-center">
               This isn't a diet app. We’re here to track the truth, the whole truth, and nothing but the 10-piece nugget.
             </Text>
@@ -101,7 +101,7 @@ export default function OnboardingScreen() {
                 <Text className="text-white font-black text-sm">Cha-ching!</Text>
               </View>
             </View>
-            <Text className="text-3xl font-black uppercase mb-4 leading-[0.9] text-black text-center">How It Works</Text>
+            <Text className="text-3xl font-black uppercase mb-4 leading-tight text-black text-center">How It Works</Text>
             <Text className="text-lg font-bold text-black opacity-90 mb-8 leading-snug text-center">
               Tap a logo at the drive-thru. Tell us what you spent. We'll handle the 'Big Back' status rankings.
             </Text>
@@ -121,9 +121,9 @@ export default function OnboardingScreen() {
               style={{ transform: [{ rotate: '2deg' }] }}
             >
               <Text className="text-[9px] font-black text-gray-400 mb-1 uppercase">Notification • Now</Text>
-              <Text className="text-xl font-black uppercase text-black leading-none">Be honest. How many times this week?</Text>
+              <Text className="text-xl font-black uppercase text-black leading-tight">Be honest. How many times this week?</Text>
             </View>
-            <Text className="text-3xl font-black uppercase mb-4 leading-[0.9] text-black text-center">The Sunday Promise</Text>
+            <Text className="text-3xl font-black uppercase mb-4 leading-tight text-black text-center">The Sunday Promise</Text>
             <Text className="text-base font-bold text-black opacity-90 mb-8 leading-snug text-center">
               Life happens. If you forget to log, we’ll nudge you every Sunday to come clean. Make sure to enable notifications. Don't worry, its only one notification per week
             </Text>

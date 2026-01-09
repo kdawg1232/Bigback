@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import { useStats } from '../hooks/useStats';
+import { useStats } from '../contexts/StatsContext';
 import { View, ActivityIndicator } from 'react-native';
 
 export default function Index() {

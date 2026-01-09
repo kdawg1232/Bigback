@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserStats, Entry } from '../types';
 import { STORAGE_KEY } from '../constants';
@@ -14,19 +14,38 @@ const INITIAL_STATS: UserStats = {
   remindersEnabled: true,
 };
 
-export function useStats() {
+interface StatsContextType {
+  stats: UserStats;
+  isHydrated: boolean;
+  addEntry: (brandId: string, brandName: string, amount: number) => void;
+  deleteEntry: (id: string) => void;
+  updateProfile: (name: string) => void;
+  toggleReminders: () => void;
+  clearAllData: () => void;
+  logout: () => void;
+  startOnboarding: () => void;
+  finishOnboarding: () => void;
+}
+
+const StatsContext = createContext<StatsContextType | null>(null);
+
+export function StatsProvider({ children }: { children: ReactNode }) {
   const [stats, setStats] = useState<UserStats>(INITIAL_STATS);
   const [isHydrated, setIsHydrated] = useState(false);
 
+  // Load data on mount
   useEffect(() => {
     const load = async () => {
       try {
         const saved = await AsyncStorage.getItem(STORAGE_KEY);
         if (saved) {
-          setStats(JSON.parse(saved));
+          const parsed: UserStats = JSON.parse(saved);
+          // We no longer prune history here so that "Monthly" and "Yearly" stats work.
+          // History is only cleared explicitly by the user in Settings.
+          setStats(parsed);
         }
       } catch (e) {
-        console.error("Storage error", e);
+        console.error("Storage corruption detected", e);
       } finally {
         setIsHydrated(true);
       }
@@ -34,6 +53,7 @@ export function useStats() {
     load();
   }, []);
 
+  // Save data whenever stats change (after hydration)
   useEffect(() => {
     if (isHydrated) {
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
@@ -43,7 +63,7 @@ export function useStats() {
   const addEntry = useCallback((brandId: string, brandName: string, amount: number) => {
     setStats(prev => {
       const newEntry: Entry = {
-        id: Math.random().toString(36).substring(2, 9),
+        id: Math.random().toString(36).substr(2, 9),
         brandId,
         brandName,
         amount,
@@ -78,19 +98,24 @@ export function useStats() {
     });
   }, []);
 
-  const updateProfile = (name: string) => {
+  const updateProfile = useCallback((name: string) => {
     setStats(prev => ({ ...prev, name }));
-  };
+  }, []);
 
-  const toggleReminders = () => {
+  const toggleReminders = useCallback(() => {
     setStats(prev => ({ ...prev, remindersEnabled: !prev.remindersEnabled }));
-  };
+  }, []);
 
   const clearAllData = useCallback(() => {
     const fresh: UserStats = {
-      ...INITIAL_STATS,
+      totalSpent: 0,
+      lastIncidentDate: null,
+      history: [],
+      memberSince: Date.now(),
+      name: 'BIG BACK MEMBER',
       hasSeenLanding: true,
       hasCompletedOnboarding: true,
+      remindersEnabled: true,
     };
     setStats(fresh);
     AsyncStorage.removeItem(STORAGE_KEY);
@@ -100,24 +125,36 @@ export function useStats() {
     setStats(prev => ({ ...prev, hasSeenLanding: false }));
   }, []);
 
-  const startOnboarding = () => {
+  const startOnboarding = useCallback(() => {
     setStats(prev => ({ ...prev, hasSeenLanding: true }));
-  };
+  }, []);
 
-  const finishOnboarding = () => {
+  const finishOnboarding = useCallback(() => {
     setStats(prev => ({ ...prev, hasCompletedOnboarding: true }));
-  };
+  }, []);
 
-  return {
-    stats,
-    isHydrated,
-    addEntry,
-    deleteEntry,
-    updateProfile,
-    toggleReminders,
-    clearAllData,
-    logout,
-    startOnboarding,
-    finishOnboarding,
-  };
+  return (
+    <StatsContext.Provider value={{
+      stats,
+      isHydrated,
+      addEntry,
+      deleteEntry,
+      updateProfile,
+      toggleReminders,
+      clearAllData,
+      logout,
+      startOnboarding,
+      finishOnboarding,
+    }}>
+      {children}
+    </StatsContext.Provider>
+  );
+}
+
+export function useStats() {
+  const context = useContext(StatsContext);
+  if (!context) {
+    throw new Error('useStats must be used within a StatsProvider');
+  }
+  return context;
 }

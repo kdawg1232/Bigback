@@ -1,27 +1,10 @@
 import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { StatsProvider, useStats } from '../contexts/StatsContext';
 import { View, ActivityIndicator } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEY } from '../constants';
 import '../global.css';
 
-export default function RootLayout() {
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    async function prepare() {
-      try {
-        // Just checking if we can access storage
-        await AsyncStorage.getItem(STORAGE_KEY);
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        setIsHydrated(true);
-      }
-    }
-
-    prepare();
-  }, []);
+function RootLayoutNav() {
+  const { isHydrated } = useStats();
 
   if (!isHydrated) {
     return (
@@ -37,5 +20,13 @@ export default function RootLayout() {
       <Stack.Screen name="landing" />
       <Stack.Screen name="onboarding" />
     </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <StatsProvider>
+      <RootLayoutNav />
+    </StatsProvider>
   );
 }

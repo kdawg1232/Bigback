@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useStats } from '../hooks/useStats';
+import { useStats } from '../contexts/StatsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LandingScreen() {
@@ -17,39 +17,37 @@ export default function LandingScreen() {
     <SafeAreaView className="flex-1 bg-brutalist-yellow" edges={['top', 'bottom']}>
       <View className="flex-1">
         {/* Main Content Area */}
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-6">
-          <View className="flex-1 justify-center items-center">
-            <Text 
-              className="text-[90px] font-black leading-[0.7] mb-10 text-black uppercase tracking-tighter text-center"
-              style={{ 
-                transform: [{ rotate: '-2deg' }],
-                textShadowColor: 'white',
-                textShadowOffset: { width: 6, height: 6 },
-                textShadowRadius: 1,
-              }}
-            >
-              BIG{"\n"}BACK
+        <View className="flex-1 items-center justify-center p-6">
+          <Text 
+            className="text-[110px] font-black leading-[0.85] mb-10 pt-4 text-black uppercase tracking-tighter text-center"
+            style={{ 
+              transform: [{ rotate: '-2deg' }],
+              textShadowColor: 'white',
+              textShadowOffset: { width: 8, height: 8 },
+              textShadowRadius: 1,
+            }}
+          >
+            BIG{"\n"}BACK
+          </Text>
+          
+          <View className="mb-10" style={{ transform: [{ rotate: '1deg' }] }}>
+            <Text className="text-3xl font-black uppercase tracking-tighter text-black leading-none text-center mb-3">
+              OWN YOUR CALORIES.{"\n"}TRACK THE SPENDING.
             </Text>
-            
-            <View className="mb-10 items-center" style={{ transform: [{ rotate: '1deg' }] }}>
-              <Text className="text-3xl font-black uppercase tracking-tighter text-black leading-none text-center">
-                OWN YOUR CALORIES.{"\n"}TRACK THE SPENDING.
-              </Text>
-              <Text className="text-base font-bold text-black leading-snug px-4 text-center mt-3">
-                No judgment. No fitness goals. Just a private display for your fast-food habits.
-              </Text>
-            </View>
-
-            <TouchableOpacity 
-              onPress={handleStart}
-              className="bg-brutalist-red border-[5px] border-black p-6 w-full shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
-            >
-              <Text className="text-white text-xl font-black text-center uppercase leading-none">
-                GET MUNCHIN — IT'S FREE
-              </Text>
-            </TouchableOpacity>
+            <Text className="text-base font-bold text-black leading-snug px-4 text-center">
+              No judgment. No fitness goals. Just a private display for your fast-food habits.
+            </Text>
           </View>
-        </ScrollView>
+
+          <TouchableOpacity 
+            onPress={handleStart}
+            className="bg-brutalist-red border-[5px] border-black p-6 w-full shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none mb-2"
+          >
+            <Text className="text-white text-xl font-black text-center uppercase leading-none">
+              GET MUNCHIN — IT'S FREE
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Footer */}
         <View className="bg-black p-6 items-center justify-center border-t-[5px] border-black mt-auto">
