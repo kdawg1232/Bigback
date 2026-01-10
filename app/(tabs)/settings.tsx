@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Linking } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Linking, Keyboard } from 'react-native';
 import { useStats } from '../../contexts/StatsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -103,6 +103,8 @@ export default function SettingsScreen() {
                   value={name}
                   onChangeText={handleUpdateName}
                   placeholder="YOUR NAME"
+                  returnKeyType="done"
+                  onSubmitEditing={Keyboard.dismiss}
                   className="text-2xl font-black text-black w-full border-b-4 border-black/20 p-1 uppercase"
                 />
                 <Text className="text-[12px] font-black text-black mt-2 tracking-widest uppercase">

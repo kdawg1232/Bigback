@@ -88,7 +88,7 @@ export default function CounterScreen() {
         transparent={true}
         animationType="fade"
       >
-        <View className="flex-1 justify-center items-center p-4 bg-black/70">
+        <View className="flex-1 justify-center items-center p-4 bg-black/70" style={{ paddingBottom: 280 }}>
           <View className="bg-brutalist-yellow border-[6px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-sm p-8 relative">
             <TouchableOpacity 
               onPress={() => setSelectedBrand(null)}
