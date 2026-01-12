@@ -44,7 +44,7 @@ export default function LandingScreen() {
             className="bg-brutalist-red border-[5px] border-black p-6 w-full shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none mb-2"
           >
             <Text className="text-white text-xl font-black text-center uppercase leading-none">
-              GET MUNCHIN — IT'S FREE
+              GET MUNCHIN
             </Text>
           </TouchableOpacity>
         </View>
