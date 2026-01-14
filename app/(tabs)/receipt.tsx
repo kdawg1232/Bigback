@@ -60,15 +60,15 @@ export default function ReceiptScreen() {
       <ScrollView className="flex-1 p-6">
         {/* HEADER SECTION */}
         <View className="flex-row justify-between items-center mb-8">
-          <Text className="text-white text-4xl font-black uppercase tracking-tighter">
+          <Text className="text-white text-3xl md:text-4xl font-black uppercase tracking-tighter">
             YOUR RECEIPT
           </Text>
           <View className="flex-row gap-2">
             <TouchableOpacity 
               onPress={() => setView(view === 'monthly' ? 'yearly' : 'monthly')}
-              className="bg-white border-[4px] border-black w-12 h-12 items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+              className="bg-white border-[4px] border-black w-10 h-10 md:w-12 md:h-12 items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
             >
-              <Text className="font-black text-2xl text-black">
+              <Text className="font-black text-xl md:text-2xl text-black">
                 {view === 'monthly' ? 'M' : 'Y'}
               </Text>
             </TouchableOpacity>
@@ -76,19 +76,19 @@ export default function ReceiptScreen() {
         </View>
 
         {/* THE PHYSICAL RECEIPT */}
-        <BrutalistReceipt className="p-8 pb-24">
+        <BrutalistReceipt className="p-6 md:p-8 pb-16 md:pb-24">
           <View className="items-center border-b-4 border-dashed border-black pb-6 mb-8">
-            <Text className="text-2xl font-black tracking-widest uppercase text-black py-2">BIG BACK TRACKER</Text>
-            <Text className="text-sm mt-1 uppercase font-bold text-black py-1">[{view} damage]</Text>
-            <Text className="text-sm mt-1 uppercase text-black py-1">EST. {new Date(stats.memberSince).toLocaleDateString()}</Text>
+            <Text className="text-xl md:text-2xl font-black tracking-widest uppercase text-black py-2">BIG BACK TRACKER</Text>
+            <Text className="text-xs md:text-sm mt-1 uppercase font-bold text-black py-1">[{view} damage]</Text>
+            <Text className="text-xs md:text-sm mt-1 uppercase text-black py-1">EST. {new Date(stats.memberSince).toLocaleDateString()}</Text>
             <Text className="text-xs mt-4 text-black">********************************</Text>
-            <Text className="text-xs uppercase font-black text-black py-1">LOGGED BY: {stats.name}</Text>
+            <Text className="text-[10px] md:text-xs uppercase font-black text-black py-1">LOGGED BY: {stats.name}</Text>
             <Text className="text-xs text-black">********************************</Text>
           </View>
 
           <View className="mb-10 items-center">
-            <Text className="text-sm font-black uppercase text-black py-1">TOTAL DAMAGE</Text>
-            <Text className="text-6xl font-black mt-2 leading-normal text-black text-center py-4">
+            <Text className="text-xs md:text-sm font-black uppercase text-black py-1">TOTAL DAMAGE</Text>
+            <Text className="text-4xl md:text-6xl font-black mt-2 leading-normal text-black text-center py-4">
               ${filteredData.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           </View>
