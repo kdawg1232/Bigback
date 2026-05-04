@@ -18,7 +18,7 @@ export default function TabLayout() {
         tabBarActiveBackgroundColor: '#000',
         tabBarLabelStyle: {
           fontWeight: '900',
-          fontSize: 10,
+          fontSize: 9,
           textTransform: 'uppercase',
         },
       }}
@@ -28,7 +28,25 @@ export default function TabLayout() {
         options={{
           title: 'COUNTER',
           tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24, color }}>🎰</Text>
+            <Text style={{ fontSize: 22, color }}>🎰</Text>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="scan"
+        options={{
+          title: 'SCAN',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 22, color }}>📸</Text>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="cuisine"
+        options={{
+          title: 'CUISINE',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 22, color }}>🍽️</Text>
           ),
         }}
       />
@@ -37,7 +55,7 @@ export default function TabLayout() {
         options={{
           title: 'RECEIPT',
           tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24, color }}>🧾</Text>
+            <Text style={{ fontSize: 22, color }}>🧾</Text>
           ),
         }}
       />
@@ -46,7 +64,7 @@ export default function TabLayout() {
         options={{
           title: 'CONFIG',
           tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24, color }}>⚙️</Text>
+            <Text style={{ fontSize: 22, color }}>⚙️</Text>
           ),
         }}
       />

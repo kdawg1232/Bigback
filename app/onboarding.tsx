@@ -92,7 +92,7 @@ export default function OnboardingScreen() {
               <Text className="text-[80px] md:text-[100px] mb-6 leading-none" style={{ transform: [{ rotate: '-12deg' }] }}>🍗</Text>
               <Text className="text-3xl md:text-4xl font-black uppercase mb-4 leading-tight text-black text-center">The Mission</Text>
               <Text className="text-base md:text-lg font-bold text-black opacity-90 mb-8 leading-snug text-center">
-                This isn't a diet app. We’re here to track the truth, the whole truth, and nothing but the 10-piece nugget.
+                This isn't a diet app. We're here to track the truth, the whole truth, and nothing but the 10-piece nugget.
               </Text>
               <TouchableOpacity 
                 onPress={() => setStep(3)}
@@ -134,11 +134,11 @@ export default function OnboardingScreen() {
                 style={{ transform: [{ rotate: '2deg' }] }}
               >
                 <Text className="text-[9px] font-black text-gray-400 mb-1 uppercase">Notification • Now</Text>
-                <Text className="text-lg md:text-xl font-black uppercase text-black leading-tight">Be honest. How many times this week?</Text>
+                <Text className="text-lg md:text-xl font-black uppercase text-black leading-tight">Sunday Reflection! How many times did you eat fast food since Wednesday?</Text>
               </View>
-              <Text className="text-2xl md:text-3xl font-black uppercase mb-4 leading-tight text-black text-center">The Sunday Promise</Text>
+              <Text className="text-2xl md:text-3xl font-black uppercase mb-4 leading-tight text-black text-center">The Weekly Check-Ins</Text>
               <Text className="text-sm md:text-base font-bold text-black opacity-90 mb-8 leading-snug text-center">
-                Life happens. If you forget to log, we’ll nudge you every Sunday to come clean. Make sure to enable notifications. Don't worry, its only one notification per week
+                Life happens. If you forget to log, we'll nudge you twice a week—Wednesday and Sunday at 8 PM. Notifications are required to continue.
               </Text>
               <View className="gap-y-4 w-full">
                 <TouchableOpacity 
@@ -152,9 +152,12 @@ export default function OnboardingScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity 
                   onPress={handleFinish}
-                  className="w-full bg-brutalist-red border-[4px] border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                  disabled={!notificationsEnabled}
+                  className={`w-full border-[4px] border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${notificationsEnabled ? 'bg-brutalist-red active:translate-x-[2px] active:translate-y-[2px] active:shadow-none' : 'bg-gray-400 opacity-50'}`}
                 >
-                  <Text className="text-white text-base md:text-lg font-black text-center uppercase">LET'S EAT</Text>
+                  <Text className="text-white text-base md:text-lg font-black text-center uppercase">
+                    {notificationsEnabled ? "LET'S EAT" : "ENABLE NOTIFICATIONS TO CONTINUE"}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>

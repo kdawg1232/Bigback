@@ -6,16 +6,20 @@ import { useRouter } from 'expo-router';
 import { useNotifications } from '../../hooks/useNotifications';
 
 export default function SettingsScreen() {
-  const { stats, updateProfile, setRemindersEnabled, clearAllData, logout } = useStats();
+  const { stats, updateProfile, setRemindersEnabled, setMonthlyBudget, clearAllData, logout } = useStats();
   const [name, setName] = useState(stats.name);
+  const [budgetInput, setBudgetInput] = useState(stats.monthlyBudget?.toString() || '');
   const [isTogglingNotifications, setIsTogglingNotifications] = useState(false);
   const router = useRouter();
   const { enableNotifications, disableNotifications, hasPermission, checkPermissionStatus } = useNotifications();
 
-  // Sync local name state with context when stats.name changes (e.g., after clear data)
   useEffect(() => {
     setName(stats.name);
   }, [stats.name]);
+
+  useEffect(() => {
+    setBudgetInput(stats.monthlyBudget?.toString() || '');
+  }, [stats.monthlyBudget]);
 
   // Re-check permission status when screen is focused
   useEffect(() => {
@@ -134,6 +138,46 @@ export default function SettingsScreen() {
                 <View className="w-4 h-4 md:w-6 md:h-6 bg-black" />
               )}
             </TouchableOpacity>
+          </View>
+
+          {/* MONTHLY BUDGET */}
+          <View className="bg-white border-[4px] border-black p-4 md:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+            <View className="absolute top-0 right-0 bg-black px-4 py-1 border-l-[4px] border-b-[4px] border-black">
+              <Text className="text-white text-[10px] font-black tracking-widest uppercase">BUDGET</Text>
+            </View>
+
+            <View className="flex-row items-center gap-3 mt-4">
+              <Text className="text-2xl">💰</Text>
+              <View className="flex-1">
+                <Text className="font-black text-base uppercase text-black leading-tight">Monthly Limit</Text>
+                <Text className="text-[9px] font-black text-black opacity-80 uppercase">
+                  SET YOUR MONTHLY FAST FOOD ALLOWANCE
+                </Text>
+              </View>
+            </View>
+
+            <View className="flex-row items-center bg-brutalist-beige border-[4px] border-black mt-3">
+              <Text className="text-xl font-black text-black pl-3">$</Text>
+              <TextInput
+                value={budgetInput}
+                onChangeText={(text) => {
+                  setBudgetInput(text);
+                  const val = parseFloat(text);
+                  if (!isNaN(val) && val > 0) {
+                    setMonthlyBudget(val);
+                  } else if (text === '') {
+                    setMonthlyBudget(null);
+                  }
+                }}
+                keyboardType="numeric"
+                placeholder="E.G. 200"
+                placeholderTextColor="#999"
+                returnKeyType="done"
+                onSubmitEditing={Keyboard.dismiss}
+                className="flex-1 py-3 px-2 text-lg font-black text-black"
+                style={{ includeFontPadding: false }}
+              />
+            </View>
           </View>
 
           {/* PRIVACY MANIFESTO */}

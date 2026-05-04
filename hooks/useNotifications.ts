@@ -9,11 +9,14 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
-// Unique identifier for our weekly notification
-const WEEKLY_NOTIFICATION_ID = 'sunday-reflection';
+// Unique identifiers for our weekly notifications
+const SUNDAY_NOTIFICATION_ID = 'sunday-reflection';
+const WEDNESDAY_NOTIFICATION_ID = 'wednesday-checkin';
 
 export interface NotificationState {
   hasPermission: boolean | null;
@@ -73,8 +76,8 @@ export function useNotifications() {
 
       if (!granted) {
         Alert.alert(
-          'Notifications Disabled',
-          'To receive Sunday reminders, please enable notifications in your device settings.',
+          'Notifications Required',
+          'Notifications are required to use Big Back. We only send 2 reminders per week (Wednesday & Sunday at 8 PM). Please enable notifications in your device settings.',
           [
             { text: 'Cancel', style: 'cancel' },
             { text: 'Open Settings', onPress: () => Linking.openSettings() }
@@ -89,66 +92,83 @@ export function useNotifications() {
     }
   }, []);
 
-  const scheduleSundayNotification = useCallback(async (): Promise<boolean> => {
+  const scheduleWeeklyNotifications = useCallback(async (): Promise<boolean> => {
     if (!Device.isDevice) return false;
 
     try {
-      // Cancel any existing weekly notification first
-      await cancelSundayNotification();
+      // Cancel any existing notifications first
+      await cancelWeeklyNotifications();
 
-      // Schedule notification for every Sunday at 7:00 PM
+      // Schedule Wednesday notification at 8:00 PM
       await Notifications.scheduleNotificationAsync({
-        identifier: WEEKLY_NOTIFICATION_ID,
+        identifier: WEDNESDAY_NOTIFICATION_ID,
+        content: {
+          title: '🍔 MIDWEEK CHECK-IN',
+          body: "Be honest. How many times did you eat fast food so far?",
+          sound: true,
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+          weekday: 4, // Wednesday (4 = Wednesday in Expo)
+          hour: 20,   // 8:00 PM
+          minute: 0,
+        },
+      });
+
+      // Schedule Sunday notification at 8:00 PM
+      await Notifications.scheduleNotificationAsync({
+        identifier: SUNDAY_NOTIFICATION_ID,
         content: {
           title: '🍔 SUNDAY REFLECTION TIME',
-          body: "Be honest. How many times did you hit the drive-thru this week?",
+          body: "Sunday Reflection! How many times did you eat fast food since Wednesday?",
           sound: true,
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
           weekday: 1, // Sunday (1 = Sunday in Expo)
-          hour: 19,   // 7:00 PM
+          hour: 20,   // 8:00 PM
           minute: 0,
         },
       });
 
-      console.log('Sunday notification scheduled successfully');
+      console.log('Weekly notifications scheduled successfully');
       return true;
     } catch (error) {
-      console.error('Error scheduling Sunday notification:', error);
+      console.error('Error scheduling weekly notifications:', error);
       return false;
     }
   }, []);
 
-  const cancelSundayNotification = useCallback(async (): Promise<void> => {
+  const cancelWeeklyNotifications = useCallback(async (): Promise<void> => {
     try {
-      await Notifications.cancelScheduledNotificationAsync(WEEKLY_NOTIFICATION_ID);
-      console.log('Sunday notification cancelled');
+      await Notifications.cancelScheduledNotificationAsync(SUNDAY_NOTIFICATION_ID);
+      await Notifications.cancelScheduledNotificationAsync(WEDNESDAY_NOTIFICATION_ID);
+      console.log('Weekly notifications cancelled');
     } catch (error) {
-      // Notification might not exist, that's okay
-      console.log('No existing notification to cancel');
+      // Notifications might not exist, that's okay
+      console.log('No existing notifications to cancel');
     }
   }, []);
 
   const enableNotifications = useCallback(async (): Promise<boolean> => {
     const hasPermission = await requestPermission();
     if (hasPermission) {
-      return await scheduleSundayNotification();
+      return await scheduleWeeklyNotifications();
     }
     return false;
-  }, [requestPermission, scheduleSundayNotification]);
+  }, [requestPermission, scheduleWeeklyNotifications]);
 
   const disableNotifications = useCallback(async (): Promise<void> => {
-    await cancelSundayNotification();
-  }, [cancelSundayNotification]);
+    await cancelWeeklyNotifications();
+  }, [cancelWeeklyNotifications]);
 
   return {
     ...state,
     requestPermission,
     enableNotifications,
     disableNotifications,
-    scheduleSundayNotification,
-    cancelSundayNotification,
+    scheduleWeeklyNotifications,
+    cancelWeeklyNotifications,
     checkPermissionStatus,
   };
 }

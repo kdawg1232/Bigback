@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useStats } from '../../contexts/StatsContext';
-import { BRANDS } from '../../constants';
+import { BRANDS, COMPARISONS } from '../../constants';
 import { BrutalistReceipt } from '../../components/BrutalistReceipt';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -45,6 +45,15 @@ export default function ReceiptScreen() {
     const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
     return stats.history.filter(entry => entry.timestamp >= sevenDaysAgo);
   }, [stats.history]);
+
+  const opportunityCosts = useMemo(() => {
+    if (filteredData.total <= 0) return [];
+    const shuffled = [...COMPARISONS].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 3).map(c => ({
+      ...c,
+      count: Math.floor(filteredData.total / c.unitCost),
+    })).filter(c => c.count > 0);
+  }, [filteredData.total]);
 
   const getStatus = () => {
     const visits = filteredData.count;
@@ -131,6 +140,26 @@ export default function ReceiptScreen() {
           </View>
         </BrutalistReceipt>
 
+        {/* OPPORTUNITY COST */}
+        {opportunityCosts.length > 0 && (
+          <View className="bg-brutalist-beige border-[4px] border-black p-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-8" style={{ transform: [{ rotate: '-0.5deg' }] }}>
+            <Text className="text-lg font-black uppercase text-black mb-1 leading-normal">WHAT ELSE COULD YOU BUY?</Text>
+            <Text className="text-[10px] font-black uppercase text-black mb-4 opacity-60">
+              YOUR ${filteredData.total.toFixed(0)} {view === 'monthly' ? 'THIS MONTH' : 'THIS YEAR'} COULD HAVE BEEN...
+            </Text>
+            <View className="gap-y-3">
+              {opportunityCosts.map((item) => (
+                <View key={item.name} className="bg-white border-[3px] border-black p-3 flex-row items-center gap-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                  <Text className="text-2xl">{item.emoji}</Text>
+                  <Text className="text-xs font-black uppercase text-black flex-1">
+                    {item.count} {item.name}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* 7-DAY AUDIT LOG */}
         <View className="bg-brutalist-yellow border-[4px] border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-10">
           <Text className="text-3xl font-black uppercase tracking-tighter leading-normal border-b-4 border-black pb-2 text-black mb-1 py-2">
@@ -142,7 +171,7 @@ export default function ReceiptScreen() {
           
           <View className="gap-y-3">
             {recentHistory.length > 0 ? recentHistory.map((entry) => {
-              const brand = BRANDS.find(b => b.id === entry.brandId);
+              const brand = BRANDS.find(b => b.id === entry.brandId) || stats.customBrands?.find(b => b.id === entry.brandId);
               return (
                 <View 
                   key={entry.id} 

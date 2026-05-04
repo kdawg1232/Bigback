@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { UserStats, Entry } from '../types';
+import { UserStats, Entry, Brand } from '../types';
 import { STORAGE_KEY } from '../constants';
 
 const INITIAL_STATS: UserStats = {
@@ -12,6 +12,8 @@ const INITIAL_STATS: UserStats = {
   hasSeenLanding: false,
   hasCompletedOnboarding: false,
   remindersEnabled: true,
+  customBrands: [],
+  monthlyBudget: null,
 };
 
 interface StatsContextType {
@@ -26,6 +28,9 @@ interface StatsContextType {
   logout: () => void;
   startOnboarding: () => void;
   finishOnboarding: () => void;
+  addCustomBrand: (brand: Brand) => void;
+  deleteCustomBrand: (id: string) => void;
+  setMonthlyBudget: (budget: number | null) => void;
 }
 
 const StatsContext = createContext<StatsContextType | null>(null);
@@ -34,16 +39,18 @@ export function StatsProvider({ children }: { children: ReactNode }) {
   const [stats, setStats] = useState<UserStats>(INITIAL_STATS);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Load data on mount
   useEffect(() => {
     const load = async () => {
       try {
         const saved = await AsyncStorage.getItem(STORAGE_KEY);
         if (saved) {
-          const parsed: UserStats = JSON.parse(saved);
-          // We no longer prune history here so that "Monthly" and "Yearly" stats work.
-          // History is only cleared explicitly by the user in Settings.
-          setStats(parsed);
+          const parsed = JSON.parse(saved);
+          setStats({
+            ...INITIAL_STATS,
+            ...parsed,
+            customBrands: parsed.customBrands ?? [],
+            monthlyBudget: parsed.monthlyBudget ?? null,
+          });
         }
       } catch (e) {
         console.error("Storage corruption detected", e);
@@ -111,16 +118,30 @@ export function StatsProvider({ children }: { children: ReactNode }) {
     setStats(prev => ({ ...prev, remindersEnabled: enabled }));
   }, []);
 
+  const addCustomBrand = useCallback((brand: Brand) => {
+    setStats(prev => ({
+      ...prev,
+      customBrands: [...prev.customBrands, brand],
+    }));
+  }, []);
+
+  const deleteCustomBrand = useCallback((id: string) => {
+    setStats(prev => ({
+      ...prev,
+      customBrands: prev.customBrands.filter(b => b.id !== id),
+    }));
+  }, []);
+
+  const setMonthlyBudget = useCallback((budget: number | null) => {
+    setStats(prev => ({ ...prev, monthlyBudget: budget }));
+  }, []);
+
   const clearAllData = useCallback(() => {
     const fresh: UserStats = {
-      totalSpent: 0,
-      lastIncidentDate: null,
-      history: [],
+      ...INITIAL_STATS,
       memberSince: Date.now(),
-      name: 'BIG BACK MEMBER',
       hasSeenLanding: true,
       hasCompletedOnboarding: true,
-      remindersEnabled: true,
     };
     setStats(fresh);
     AsyncStorage.removeItem(STORAGE_KEY);
@@ -151,6 +172,9 @@ export function StatsProvider({ children }: { children: ReactNode }) {
       logout,
       startOnboarding,
       finishOnboarding,
+      addCustomBrand,
+      deleteCustomBrand,
+      setMonthlyBudget,
     }}>
       {children}
     </StatsContext.Provider>

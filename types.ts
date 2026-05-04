@@ -12,6 +12,7 @@ export interface Brand {
   color: string;
   textColor: string;
   emoji: string;
+  cuisine: string;
 }
 
 export interface UserStats {
@@ -23,7 +24,9 @@ export interface UserStats {
   hasSeenLanding: boolean;
   hasCompletedOnboarding: boolean;
   remindersEnabled: boolean;
+  customBrands: Brand[];
+  monthlyBudget: number | null;
 }
 
-export type TabType = 'counter' | 'receipt' | 'settings';
+export type TabType = 'counter' | 'receipt' | 'settings' | 'scan' | 'cuisine';
 export type AppView = 'landing' | 'onboarding' | 'main';
