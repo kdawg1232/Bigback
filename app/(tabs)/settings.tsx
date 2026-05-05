@@ -4,14 +4,17 @@ import { useStats } from '../../contexts/StatsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useNotifications } from '../../hooks/useNotifications';
+import { useGeofencing } from '../../hooks/useGeofencing';
 
 export default function SettingsScreen() {
-  const { stats, updateProfile, setRemindersEnabled, setMonthlyBudget, clearAllData, logout } = useStats();
+  const { stats, updateProfile, setRemindersEnabled, setMonthlyBudget, setLocationTrackingEnabled, clearAllData, logout } = useStats();
   const [name, setName] = useState(stats.name);
   const [budgetInput, setBudgetInput] = useState(stats.monthlyBudget?.toString() || '');
   const [isTogglingNotifications, setIsTogglingNotifications] = useState(false);
+  const [isTogglingLocation, setIsTogglingLocation] = useState(false);
   const router = useRouter();
   const { enableNotifications, disableNotifications, hasPermission, checkPermissionStatus } = useNotifications();
+  const { enableGeofencing, disableGeofencing } = useGeofencing(stats.locationTrackingEnabled);
 
   useEffect(() => {
     setName(stats.name);
@@ -25,6 +28,24 @@ export default function SettingsScreen() {
   useEffect(() => {
     checkPermissionStatus();
   }, []);
+
+  const handleToggleLocation = async () => {
+    if (isTogglingLocation) return;
+    setIsTogglingLocation(true);
+    try {
+      if (stats.locationTrackingEnabled) {
+        await disableGeofencing();
+        setLocationTrackingEnabled(false);
+      } else {
+        const success = await enableGeofencing();
+        if (success) {
+          setLocationTrackingEnabled(true);
+        }
+      }
+    } finally {
+      setIsTogglingLocation(false);
+    }
+  };
 
   const handleToggleNotifications = async () => {
     if (isTogglingNotifications) return;
@@ -136,6 +157,28 @@ export default function SettingsScreen() {
             >
               {stats.remindersEnabled && (
                 <View className="w-4 h-4 md:w-6 md:h-6 bg-black" />
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* LOCATION TRACKING */}
+          <View className="bg-white border-[4px] border-black p-3 md:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex-row justify-between items-center">
+            <View className="flex-row items-center gap-3 md:gap-4 flex-1 mr-2">
+              <Text className="text-2xl md:text-4xl">{stats.locationTrackingEnabled ? '📍' : '📍'}</Text>
+              <View className="flex-1">
+                <Text className="font-black text-base md:text-xl uppercase leading-tight text-black" numberOfLines={1} adjustsFontSizeToFit>Restaurant Detection</Text>
+                <Text className="text-[9px] md:text-[11px] font-black text-black opacity-80 uppercase">
+                  {stats.locationTrackingEnabled ? 'DETECTING NEARBY RESTAURANTS' : 'LOCATION TRACKING OFF'}
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity 
+              onPress={handleToggleLocation}
+              disabled={isTogglingLocation}
+              className={`w-10 h-10 md:w-14 md:h-14 border-[4px] border-black items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${stats.locationTrackingEnabled ? 'bg-green-500' : 'bg-gray-200'}`}
+            >
+              {stats.locationTrackingEnabled && (
+                <View className="w-4 h-4 md:w-6 md:h-6 bg-white" />
               )}
             </TouchableOpacity>
           </View>

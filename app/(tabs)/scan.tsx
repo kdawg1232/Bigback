@@ -333,11 +333,14 @@ export default function ScanScreen() {
 
   // CAMERA MODE
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['top']}>
-      <View className="flex-1">
-        <CameraView ref={cameraRef} className="flex-1" facing="back">
-          {/* Overlay */}
-          <View className="flex-1 justify-between">
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
+      <CameraView
+        ref={cameraRef}
+        style={{ flex: 1 }}
+        facing="back"
+      >
+        <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+          <View style={{ flex: 1, justifyContent: 'space-between' }}>
             <View className="p-6 pt-4">
               <Text className="text-white text-2xl font-black uppercase text-center" style={{ textShadowColor: '#000', textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 4 }}>
                 SCAN RECEIPT
@@ -348,7 +351,7 @@ export default function ScanScreen() {
             </View>
 
             {/* Guide frame */}
-            <View className="mx-8 my-4 flex-1 border-2 border-white/40 rounded-sm" />
+            <View style={{ flex: 1, marginHorizontal: 32, marginVertical: 16, borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)', borderRadius: 4 }} />
 
             {/* Controls */}
             <View className="p-6 pb-8 items-center gap-y-4">
@@ -361,14 +364,14 @@ export default function ScanScreen() {
 
               <TouchableOpacity
                 onPress={handlePickImage}
-                className="bg-white/20 px-6 py-3 rounded-sm border-[2px] border-white/40"
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 4, borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)' }}
               >
                 <Text className="text-white text-xs font-black uppercase">PICK FROM GALLERY</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </CameraView>
-      </View>
-    </SafeAreaView>
+        </SafeAreaView>
+      </CameraView>
+    </View>
   );
 }

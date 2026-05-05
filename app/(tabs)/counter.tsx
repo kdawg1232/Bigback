@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Dimensions, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { useStats } from '../../contexts/StatsContext';
 import { BRANDS, CUISINE_TYPES } from '../../constants';
 import { Brand } from '../../types';
@@ -18,6 +19,9 @@ export default function CounterScreen() {
   const [localName, setLocalName] = useState('');
   const [localEmoji, setLocalEmoji] = useState('🍴');
   const [localCuisine, setLocalCuisine] = useState('Other');
+  const [geofenceBrands, setGeofenceBrands] = useState<Array<{ brandId: string; brandName: string }>>([]);
+  const [showGeofencePicker, setShowGeofencePicker] = useState(false);
+  const notifResponseListener = useRef<Notifications.EventSubscription | null>(null);
 
   const daysSince = stats.lastIncidentDate 
     ? Math.floor((Date.now() - stats.lastIncidentDate) / (1000 * 60 * 60 * 24))
@@ -56,10 +60,33 @@ export default function CounterScreen() {
     return allBrands.filter(b => b.name.toLowerCase().includes(q));
   }, [allBrands, searchQuery]);
 
-  const handleSelectBrand = (brand: Brand, prefillAmount?: number) => {
+  const handleSelectBrand = useCallback((brand: Brand, prefillAmount?: number) => {
     setSelectedBrand(brand);
     setAmountInput(prefillAmount != null ? prefillAmount.toFixed(2) : '15.00');
-  };
+  }, []);
+
+  // Handle geofence notification taps
+  useEffect(() => {
+    notifResponseListener.current = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = response.notification.request.content.data as any;
+        if (data?.type !== 'geofence' || !data?.nearbyBrands) return;
+
+        const nearby: Array<{ brandId: string; brandName: string }> = data.nearbyBrands;
+        if (nearby.length === 1) {
+          const brand = allBrands.find((b) => b.id === nearby[0].brandId);
+          if (brand) handleSelectBrand(brand);
+        } else if (nearby.length > 1) {
+          setGeofenceBrands(nearby);
+          setShowGeofencePicker(true);
+        }
+      },
+    );
+
+    return () => {
+      notifResponseListener.current?.remove();
+    };
+  }, [allBrands, handleSelectBrand]);
 
   const handleSubmit = () => {
     if (selectedBrand) {
@@ -352,6 +379,53 @@ export default function CounterScreen() {
             </View>
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* GEOFENCE PICKER MODAL */}
+      <Modal
+        visible={showGeofencePicker}
+        transparent={true}
+        animationType="fade"
+      >
+        <View className="flex-1 justify-center items-center p-4 bg-black/70">
+          <View className="bg-white border-[6px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-sm p-6 relative">
+            <TouchableOpacity
+              onPress={() => { setShowGeofencePicker(false); setGeofenceBrands([]); }}
+              className="absolute -top-4 -right-4 bg-white border-[4px] border-black w-10 h-10 items-center justify-center z-10 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+            >
+              <Text className="text-black font-black text-xl">×</Text>
+            </TouchableOpacity>
+
+            <Text className="text-2xl font-black uppercase text-black mb-2 leading-normal">WHERE ARE YOU?</Text>
+            <Text className="text-[10px] font-black uppercase text-black opacity-60 mb-5">TAP THE RESTAURANT YOU'RE AT</Text>
+
+            <View className="gap-y-3">
+              {geofenceBrands.map((nb) => {
+                const brand = allBrands.find((b) => b.id === nb.brandId);
+                return (
+                  <TouchableOpacity
+                    key={nb.brandId}
+                    onPress={() => {
+                      setShowGeofencePicker(false);
+                      setGeofenceBrands([]);
+                      if (brand) handleSelectBrand(brand);
+                    }}
+                    style={{ backgroundColor: brand?.color || '#333' }}
+                    className="border-[4px] border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-row items-center gap-3 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                  >
+                    <Text className="text-2xl">{brand?.emoji || '🍽️'}</Text>
+                    <Text
+                      className="text-lg font-black uppercase"
+                      style={{ color: brand?.textColor || '#FFF' }}
+                    >
+                      {nb.brandName}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );

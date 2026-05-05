@@ -14,6 +14,7 @@ const INITIAL_STATS: UserStats = {
   remindersEnabled: true,
   customBrands: [],
   monthlyBudget: null,
+  locationTrackingEnabled: false,
 };
 
 interface StatsContextType {
@@ -31,6 +32,7 @@ interface StatsContextType {
   addCustomBrand: (brand: Brand) => void;
   deleteCustomBrand: (id: string) => void;
   setMonthlyBudget: (budget: number | null) => void;
+  setLocationTrackingEnabled: (enabled: boolean) => void;
 }
 
 const StatsContext = createContext<StatsContextType | null>(null);
@@ -50,6 +52,7 @@ export function StatsProvider({ children }: { children: ReactNode }) {
             ...parsed,
             customBrands: parsed.customBrands ?? [],
             monthlyBudget: parsed.monthlyBudget ?? null,
+            locationTrackingEnabled: parsed.locationTrackingEnabled ?? false,
           });
         }
       } catch (e) {
@@ -136,6 +139,10 @@ export function StatsProvider({ children }: { children: ReactNode }) {
     setStats(prev => ({ ...prev, monthlyBudget: budget }));
   }, []);
 
+  const setLocationTrackingEnabled = useCallback((enabled: boolean) => {
+    setStats(prev => ({ ...prev, locationTrackingEnabled: enabled }));
+  }, []);
+
   const clearAllData = useCallback(() => {
     const fresh: UserStats = {
       ...INITIAL_STATS,
@@ -175,6 +182,7 @@ export function StatsProvider({ children }: { children: ReactNode }) {
       addCustomBrand,
       deleteCustomBrand,
       setMonthlyBudget,
+      setLocationTrackingEnabled,
     }}>
       {children}
     </StatsContext.Provider>

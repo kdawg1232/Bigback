@@ -26,6 +26,7 @@ export interface UserStats {
   remindersEnabled: boolean;
   customBrands: Brand[];
   monthlyBudget: number | null;
+  locationTrackingEnabled: boolean;
 }
 
 export type TabType = 'counter' | 'receipt' | 'settings' | 'scan' | 'cuisine';
