@@ -1,15 +1,15 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
-import { useStats } from '../../contexts/StatsContext';
-import { BRANDS } from '../../constants';
-import { Brand } from '../../types';
+import { View, Text, ScrollView, TouchableOpacity, Modal, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useStats } from '../../../contexts/StatsContext';
+import { BRANDS, CUISINE_TYPES } from '../../../constants';
+import { Brand } from '../../../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface CuisineData {
-  cuisine: string;
-  visits: number;
-  spent: number;
-}
+const { width } = Dimensions.get('window');
+const GRID_COLS = 3;
+const GRID_GAP = 12;
+const TILE_WIDTH = (width - 48 - GRID_GAP * (GRID_COLS - 1)) / GRID_COLS;
 
 const CUISINE_COLORS: Record<string, string> = {
   American: '#E21237',
@@ -30,8 +30,28 @@ const CUISINE_COLORS: Record<string, string> = {
   Other: '#333333',
 };
 
-export default function CuisineScreen() {
+const CUISINE_EMOJIS: Record<string, string> = {
+  American: '🍔',
+  Mexican: '🌮',
+  Coffee: '☕',
+  Chicken: '🍗',
+  Pizza: '🍕',
+  Sandwiches: '🥖',
+  Bakery: '🥯',
+  Dessert: '🍦',
+  Chinese: '🥡',
+  Japanese: '🍣',
+  Indian: '🍛',
+  Italian: '🍝',
+  Thai: '🍜',
+  Korean: '🥘',
+  Mediterranean: '🥙',
+  Other: '🍽️',
+};
+
+export default function CuisineListScreen() {
   const { stats } = useStats();
+  const router = useRouter();
   const [tryNewModal, setTryNewModal] = useState(false);
   const [suggestedBrand, setSuggestedBrand] = useState<Brand | null>(null);
 
@@ -39,8 +59,12 @@ export default function CuisineScreen() {
     return [...BRANDS, ...(stats.customBrands || [])];
   }, [stats.customBrands]);
 
-  const cuisineData = useMemo(() => {
-    const map: Record<string, CuisineData> = {};
+  const cuisineMap = useMemo(() => {
+    const map: Record<string, { cuisine: string; visits: number; spent: number }> = {};
+
+    for (const type of CUISINE_TYPES) {
+      map[type] = { cuisine: type, visits: 0, spent: 0 };
+    }
 
     stats.history.forEach(entry => {
       const brand = allBrands.find(b => b.id === entry.brandId);
@@ -52,16 +76,20 @@ export default function CuisineScreen() {
       map[cuisine].spent += entry.amount;
     });
 
-    return Object.values(map).sort((a, b) => b.spent - a.spent);
+    return map;
   }, [stats.history, allBrands]);
 
+  const cuisineDataSorted = useMemo(() => {
+    return Object.values(cuisineMap).sort((a, b) => b.spent - a.spent);
+  }, [cuisineMap]);
+
   const totalVisits = useMemo(() => {
-    return cuisineData.reduce((sum, c) => sum + c.visits, 0);
-  }, [cuisineData]);
+    return cuisineDataSorted.reduce((sum, c) => sum + c.visits, 0);
+  }, [cuisineDataSorted]);
 
   const maxSpent = useMemo(() => {
-    return Math.max(...cuisineData.map(c => c.spent), 1);
-  }, [cuisineData]);
+    return Math.max(...cuisineDataSorted.map(c => c.spent), 1);
+  }, [cuisineDataSorted]);
 
   const handleTryNew = () => {
     const visitedIds = new Set(stats.history.map(e => e.brandId));
@@ -81,6 +109,10 @@ export default function CuisineScreen() {
       setSuggestedBrand(sorted[0] || null);
     }
     setTryNewModal(true);
+  };
+
+  const navigateToCuisine = (type: string) => {
+    router.push({ pathname: '/(tabs)/cuisine/[type]', params: { type } });
   };
 
   return (
@@ -106,8 +138,39 @@ export default function CuisineScreen() {
           </Text>
         </TouchableOpacity>
 
+        {/* CUISINE TYPE GRID */}
+        <View className="mb-6">
+          <Text className="text-sm font-black uppercase text-black tracking-widest mb-3">EXPLORE BY CUISINE</Text>
+          <View className="flex-row flex-wrap gap-3">
+            {CUISINE_TYPES.map((type) => {
+              const data = cuisineMap[type];
+              const color = CUISINE_COLORS[type] || '#333';
+              const emoji = CUISINE_EMOJIS[type] || '🍽️';
+
+              return (
+                <TouchableOpacity
+                  key={type}
+                  onPress={() => navigateToCuisine(type)}
+                  style={{ width: TILE_WIDTH, backgroundColor: color }}
+                  className="border-[4px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-3 items-center active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                >
+                  <Text className="text-2xl mb-1">{emoji}</Text>
+                  <Text className="text-[9px] font-black uppercase text-white text-center" numberOfLines={1}>
+                    {type}
+                  </Text>
+                  {data && data.visits > 0 && (
+                    <Text className="text-[9px] font-black text-white/70 mt-0.5">
+                      {data.visits}×
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
         {/* CUISINE BREAKDOWN */}
-        {cuisineData.length > 0 ? (
+        {cuisineDataSorted.some(c => c.visits > 0) ? (
           <View className="gap-y-4 mb-10">
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-sm font-black uppercase text-black tracking-widest">BREAKDOWN</Text>
@@ -116,12 +179,16 @@ export default function CuisineScreen() {
               </Text>
             </View>
 
-            {cuisineData.map((item, idx) => {
+            {cuisineDataSorted.filter(c => c.visits > 0).map((item) => {
               const barWidth = (item.spent / maxSpent) * 100;
               const color = CUISINE_COLORS[item.cuisine] || '#333';
 
               return (
-                <View key={item.cuisine} className="bg-white border-[4px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                <TouchableOpacity
+                  key={item.cuisine}
+                  onPress={() => navigateToCuisine(item.cuisine)}
+                  className="bg-white border-[4px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden active:translate-x-[1px] active:translate-y-[1px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                >
                   <View
                     style={{ width: `${barWidth}%`, backgroundColor: color }}
                     className="absolute top-0 left-0 bottom-0 opacity-15"
@@ -144,7 +211,7 @@ export default function CuisineScreen() {
                       </Text>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>

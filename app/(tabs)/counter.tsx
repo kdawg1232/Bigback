@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Dimensions, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Dimensions, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { useStats } from '../../contexts/StatsContext';
 import { BRANDS, CUISINE_TYPES } from '../../constants';
@@ -11,10 +11,11 @@ const { width } = Dimensions.get('window');
 const ITEM_WIDTH = (width - 32 - 32) / 3;
 
 export default function CounterScreen() {
-  const { stats, addEntry, addCustomBrand } = useStats();
+  const { stats, addEntry, addCustomBrand, addPinnedBrand, removePinnedBrand } = useStats();
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [amountInput, setAmountInput] = useState('15.00');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [showAddTile, setShowAddTile] = useState(false);
+  const [addTileSearch, setAddTileSearch] = useState('');
   const [showAddLocal, setShowAddLocal] = useState(false);
   const [localName, setLocalName] = useState('');
   const [localEmoji, setLocalEmoji] = useState('🍴');
@@ -30,6 +31,12 @@ export default function CounterScreen() {
   const allBrands = useMemo(() => {
     return [...BRANDS, ...stats.customBrands];
   }, [stats.customBrands]);
+
+  const pinnedBrands = useMemo(() => {
+    return stats.pinnedBrandIds
+      .map(id => allBrands.find(b => b.id === id))
+      .filter((b): b is Brand => b != null);
+  }, [stats.pinnedBrandIds, allBrands]);
 
   const brandTotals = useMemo(() => {
     const totals: Record<string, number> = {};
@@ -54,18 +61,20 @@ export default function CounterScreen() {
     return recents;
   }, [stats.history, allBrands]);
 
-  const filteredBrands = useMemo(() => {
-    if (!searchQuery.trim()) return allBrands;
-    const q = searchQuery.toLowerCase();
-    return allBrands.filter(b => b.name.toLowerCase().includes(q));
-  }, [allBrands, searchQuery]);
+  // Brands available to add (not already pinned)
+  const availableBrands = useMemo(() => {
+    const pinnedSet = new Set(stats.pinnedBrandIds);
+    const list = allBrands.filter(b => !pinnedSet.has(b.id));
+    if (!addTileSearch.trim()) return list;
+    const q = addTileSearch.toLowerCase();
+    return list.filter(b => b.name.toLowerCase().includes(q));
+  }, [allBrands, stats.pinnedBrandIds, addTileSearch]);
 
   const handleSelectBrand = useCallback((brand: Brand, prefillAmount?: number) => {
     setSelectedBrand(brand);
     setAmountInput(prefillAmount != null ? prefillAmount.toFixed(2) : '15.00');
   }, []);
 
-  // Handle geofence notification taps
   useEffect(() => {
     notifResponseListener.current = Notifications.addNotificationResponseReceivedListener(
       (response) => {
@@ -99,6 +108,27 @@ export default function CounterScreen() {
     }
   };
 
+  const handleLongPressBrand = (brand: Brand) => {
+    Alert.alert(
+      `REMOVE ${brand.name}?`,
+      'This only removes it from your grid. Your history is safe.',
+      [
+        { text: 'CANCEL', style: 'cancel' },
+        {
+          text: 'REMOVE',
+          style: 'destructive',
+          onPress: () => removePinnedBrand(brand.id),
+        },
+      ],
+    );
+  };
+
+  const handleAddBrandToGrid = (brand: Brand) => {
+    addPinnedBrand(brand.id);
+    setShowAddTile(false);
+    setAddTileSearch('');
+  };
+
   const handleAddLocal = () => {
     if (!localName.trim()) return;
     const id = `custom-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
@@ -111,10 +141,13 @@ export default function CounterScreen() {
       cuisine: localCuisine,
     };
     addCustomBrand(newBrand);
+    addPinnedBrand(id);
     setShowAddLocal(false);
     setLocalName('');
     setLocalEmoji('🍴');
     setLocalCuisine('Other');
+    setShowAddTile(false);
+    setAddTileSearch('');
   };
 
   const currentMonthSpent = useMemo(() => {
@@ -182,41 +215,20 @@ export default function CounterScreen() {
           <View className="h-[4px] flex-1 bg-black" />
         </View>
 
-        {/* SEARCH BAR */}
-        <View className="mb-3">
-          <View className="bg-white border-[4px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-row items-center px-3">
-            <Text className="text-lg mr-2">🔍</Text>
-            <TextInput
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="SEARCH RESTAURANTS..."
-              placeholderTextColor="#999"
-              className="flex-1 py-3 text-sm font-black uppercase text-black"
-              style={{ includeFontPadding: false }}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Text className="text-black font-black text-lg">×</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
+        {pinnedBrands.length === 0 && (
+          <Text className="text-[10px] font-black uppercase tracking-widest text-black opacity-50 text-center mb-3">
+            TAP + TO ADD YOUR FAVORITE SPOTS
+          </Text>
+        )}
 
-        {/* ADD LOCAL SPOT BUTTON */}
-        <TouchableOpacity
-          onPress={() => setShowAddLocal(true)}
-          className="mb-5 bg-black border-[4px] border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-row items-center justify-center gap-2 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-        >
-          <Text className="text-lg">📍</Text>
-          <Text className="text-white text-sm font-black uppercase">Add Local Spot</Text>
-        </TouchableOpacity>
-
-        {/* BRAND GRID */}
+        {/* PINNED BRAND GRID + ADD TILE */}
         <View className="flex-row flex-wrap gap-4 pb-12 justify-center">
-          {filteredBrands.map((brand) => (
+          {pinnedBrands.map((brand) => (
             <TouchableOpacity
               key={brand.id}
               onPress={() => handleSelectBrand(brand)}
+              onLongPress={() => handleLongPressBrand(brand)}
+              delayLongPress={500}
               style={{ 
                 backgroundColor: brand.color, 
                 width: ITEM_WIDTH, 
@@ -249,11 +261,21 @@ export default function CounterScreen() {
               </View>
             </TouchableOpacity>
           ))}
-          {filteredBrands.length === 0 && (
-            <View className="py-8 w-full">
-              <Text className="text-center font-black text-sm uppercase text-black">No restaurants match "{searchQuery}"</Text>
-            </View>
-          )}
+
+          {/* ADD TILE PLACEHOLDER */}
+          <TouchableOpacity
+            onPress={() => setShowAddTile(true)}
+            style={{ 
+              width: ITEM_WIDTH, 
+              aspectRatio: 1,
+              borderWidth: 5,
+              borderColor: '#000',
+              borderStyle: 'dashed',
+            }}
+            className="bg-white/40 items-center justify-center active:bg-white/70"
+          >
+            <Text className="text-5xl font-black text-black/25 leading-none">+</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -302,6 +324,93 @@ export default function CounterScreen() {
                   <Text className="text-xl md:text-2xl">📉</Text>
                 </TouchableOpacity>
               </View>
+            </View>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* ADD RESTAURANT TO GRID MODAL */}
+      <Modal
+        visible={showAddTile}
+        transparent={true}
+        animationType="fade"
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            className="flex-1 justify-end bg-black/70"
+          >
+            <View className="bg-brutalist-beige border-t-[6px] border-x-[6px] border-black rounded-t-2xl max-h-[80%]">
+              <View className="p-5 pb-3">
+                <View className="flex-row justify-between items-center mb-4">
+                  <Text className="text-2xl font-black uppercase text-black leading-normal">ADD TO GRID</Text>
+                  <TouchableOpacity
+                    onPress={() => { setShowAddTile(false); setAddTileSearch(''); }}
+                    className="bg-white border-[3px] border-black w-9 h-9 items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    <Text className="text-black font-black text-lg">×</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* SEARCH */}
+                <View className="bg-white border-[4px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex-row items-center px-3 mb-3">
+                  <Text className="text-lg mr-2">🔍</Text>
+                  <TextInput
+                    value={addTileSearch}
+                    onChangeText={setAddTileSearch}
+                    placeholder="SEARCH RESTAURANTS..."
+                    placeholderTextColor="#999"
+                    autoFocus
+                    className="flex-1 py-3 text-sm font-black uppercase text-black"
+                    style={{ includeFontPadding: false }}
+                  />
+                  {addTileSearch.length > 0 && (
+                    <TouchableOpacity onPress={() => setAddTileSearch('')}>
+                      <Text className="text-black font-black text-lg">×</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* ADD LOCAL SPOT BUTTON */}
+                <TouchableOpacity
+                  onPress={() => setShowAddLocal(true)}
+                  className="bg-black border-[3px] border-black p-2.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex-row items-center justify-center gap-2 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none mb-3"
+                >
+                  <Text className="text-sm">📍</Text>
+                  <Text className="text-white text-[11px] font-black uppercase">Add Custom / Local Spot</Text>
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView className="px-5 pb-8" showsVerticalScrollIndicator={false}>
+                <View className="gap-y-2 pb-10">
+                  {availableBrands.map((brand) => (
+                    <TouchableOpacity
+                      key={brand.id}
+                      onPress={() => handleAddBrandToGrid(brand)}
+                      style={{ backgroundColor: brand.color }}
+                      className="border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] p-3 flex-row items-center gap-3 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                    >
+                      <Text className="text-xl">{brand.emoji}</Text>
+                      <View className="flex-1">
+                        <Text className="text-sm font-black uppercase" style={{ color: brand.textColor }}>
+                          {brand.name}
+                        </Text>
+                        <Text className="text-[9px] font-black uppercase" style={{ color: brand.textColor, opacity: 0.7 }}>
+                          {brand.cuisine}
+                        </Text>
+                      </View>
+                      <Text className="text-lg" style={{ color: brand.textColor, opacity: 0.6 }}>+</Text>
+                    </TouchableOpacity>
+                  ))}
+                  {availableBrands.length === 0 && (
+                    <View className="py-6">
+                      <Text className="text-center font-black text-sm uppercase text-black opacity-50">
+                        {addTileSearch ? `NO MATCHES FOR "${addTileSearch}"` : 'ALL RESTAURANTS ADDED'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </ScrollView>
             </View>
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>

@@ -15,6 +15,7 @@ const INITIAL_STATS: UserStats = {
   customBrands: [],
   monthlyBudget: null,
   locationTrackingEnabled: false,
+  pinnedBrandIds: [],
 };
 
 interface StatsContextType {
@@ -33,6 +34,8 @@ interface StatsContextType {
   deleteCustomBrand: (id: string) => void;
   setMonthlyBudget: (budget: number | null) => void;
   setLocationTrackingEnabled: (enabled: boolean) => void;
+  addPinnedBrand: (brandId: string) => void;
+  removePinnedBrand: (brandId: string) => void;
 }
 
 const StatsContext = createContext<StatsContextType | null>(null);
@@ -53,6 +56,7 @@ export function StatsProvider({ children }: { children: ReactNode }) {
             customBrands: parsed.customBrands ?? [],
             monthlyBudget: parsed.monthlyBudget ?? null,
             locationTrackingEnabled: parsed.locationTrackingEnabled ?? false,
+            pinnedBrandIds: parsed.pinnedBrandIds ?? [],
           });
         }
       } catch (e) {
@@ -143,6 +147,20 @@ export function StatsProvider({ children }: { children: ReactNode }) {
     setStats(prev => ({ ...prev, locationTrackingEnabled: enabled }));
   }, []);
 
+  const addPinnedBrand = useCallback((brandId: string) => {
+    setStats(prev => {
+      if (prev.pinnedBrandIds.includes(brandId)) return prev;
+      return { ...prev, pinnedBrandIds: [...prev.pinnedBrandIds, brandId] };
+    });
+  }, []);
+
+  const removePinnedBrand = useCallback((brandId: string) => {
+    setStats(prev => ({
+      ...prev,
+      pinnedBrandIds: prev.pinnedBrandIds.filter(id => id !== brandId),
+    }));
+  }, []);
+
   const clearAllData = useCallback(() => {
     const fresh: UserStats = {
       ...INITIAL_STATS,
@@ -183,6 +201,8 @@ export function StatsProvider({ children }: { children: ReactNode }) {
       deleteCustomBrand,
       setMonthlyBudget,
       setLocationTrackingEnabled,
+      addPinnedBrand,
+      removePinnedBrand,
     }}>
       {children}
     </StatsContext.Provider>

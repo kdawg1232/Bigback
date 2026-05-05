@@ -27,6 +27,7 @@ export interface UserStats {
   customBrands: Brand[];
   monthlyBudget: number | null;
   locationTrackingEnabled: boolean;
+  pinnedBrandIds: string[];
 }
 
 export type TabType = 'counter' | 'receipt' | 'settings' | 'scan' | 'cuisine';
