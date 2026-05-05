@@ -13,7 +13,7 @@ module.exports = {
     name: isDevBuild ? "Bigback (Dev)" : "Bigback",
     slug: "Bigback",
     scheme: isDevBuild ? "bigback-dev" : "bigback",
-    version: "1.0.0",
+    version: "2.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
