@@ -21,24 +21,48 @@
         <p>Big Back was built on one principle: <strong>Honesty shouldn't be shared.</strong></p>
 
         <div class="legal-text">
-            <h3>1. Data Collection</h3>
-            <p>We do not collect any personal information. We do not have servers. We do not have accounts. Every piece of data you enter—every burger, every dollar, every timestamp—is stored locally on your device using AsyncStorage.</p>
+            <p><strong>Big Back does not run its own servers for your spend log.</strong> We do not require an account. The amounts, brands, and stats you save are stored on your device (for example using on-device storage). We do not receive that information on our systems because we do not operate a backend that collects it.</p>
 
-            <h3>2. Data Usage</h3>
-            <p>Your data is used exclusively to generate your personal statistics and receipts within the app. We cannot see it. We cannot sell it. We cannot track it.</p>
+            <h3>1. Optional location and geofencing (iOS)</h3>
+            <p>If you turn on <strong>restaurant detection</strong> in the app, Big Back may use <strong>precise location</strong> on your device to:</p>
+            <ul>
+                <li>Find places (for example fast-food brands) <strong>near you</strong> so the app can set up <strong>geofences</strong> around those spots.</li>
+                <li>Detect when you <strong>enter or leave</strong> those areas so we can offer a <strong>local reminder</strong> to log what you spent (after a short delay).</li>
+            </ul>
+            <p><strong>Background / “Always” access:</strong> Geofencing can fire when the app is not open. That is why the app may ask for <strong>location while using the app</strong> and, if you approve it, <strong>always-on location</strong> on iOS. You can refuse or later turn this off in <strong>Settings</strong> inside the app and in system Settings.</p>
+            <p><strong>Apple’s services:</strong> To discover nearby venues, the app uses <strong>Apple MapKit location search</strong> on-device. Those searches are handled by <strong>Apple’s systems</strong> under Apple’s privacy terms—not by Big Back’s servers. Location and spend data you keep in the app are still <strong>not uploaded to us</strong> because we do not operate a service that receives them.</p>
+            <p>If you do not enable restaurant detection, we do not use location for that feature.</p>
 
-            <h3>3. Third Parties</h3>
-            <p>We do not share data with any third parties because we don't have your data to begin with.</p>
+            <h3>2. Notifications</h3>
+            <p>If you allow notifications, the app may schedule <strong>reminders on your device</strong> (for example weekly check-ins and optional geofence-related prompts). We do not use those permissions to run ads for third parties or to sell notification access.</p>
 
-            <h3>4. Data Deletion</h3>
-            <p>You have full control. You can wipe all your data at any time by using the "Clear My Sins" button in the app settings. This action is permanent and cannot be undone by us, as we have no backups.</p>
+            <h3>3. Camera and photos</h3>
+            <p>If you use receipt scanning or choose images from your library, the app accesses your <strong>camera</strong> and/or <strong>photo library</strong> only to process what you choose in the app. That processing happens on your device. We do not operate a cloud archive of your photos or receipts.</p>
 
-            <h3>5. Contact</h3>
+            <h3>4. Data we do not collect (as an app publisher)</h3>
+            <p>We do not ask you to sign in to Big Back. We do not maintain user accounts in the app for your spending log. We do not sell your spend log or location history because we do not operate the infrastructure that would receive those from the app.</p>
+
+            <h3>5. Data usage on your phone</h3>
+            <p>Your logged spending and preferences are used only to power the app’s screens and statistics on your device. Apple and your device OS may provide services (location, maps search, notifications) according to their own policies.</p>
+
+            <h3>6. Third parties</h3>
+            <p>Apart from platform services described above (for example Apple), we do not share your spending data with advertisers or data brokers—we do not have that data on our servers to share.</p>
+
+            <h3>7. Children</h3>
+            <p>Big Back is not directed at children. We do not knowingly collect personal information from children through our own backend services.</p>
+
+            <h3>8. Data deletion</h3>
+            <p>You can remove your data from the device at any time using options in the app (for example clearing stored data in settings where available). Because we do not host your log on our servers, there is nothing for us to delete remotely for that local content.</p>
+
+            <h3>9. App Store and “App Privacy” labels</h3>
+            <p>When you submit or update the app, Apple’s App Store Connect may ask what data types are linked to the user. You should declare data types consistent with how the app actually behaves—for example <strong>precise location</strong> if restaurant detection is used, with a purpose such as app functionality or reminders—and match this policy and your in-app explanations.</p>
+
+            <h3>10. Contact</h3>
             <p>If you have questions about this policy, reach out via the Support page.</p>
         </div>
 
         <footer>
-            LAST UPDATED: JANUARY 2026
+            LAST UPDATED: MAY 2026
         </footer>
     </div>
 </body>
